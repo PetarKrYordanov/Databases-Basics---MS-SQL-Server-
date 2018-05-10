@@ -134,7 +134,7 @@ Problem 18.	*3rd Highest Salary
 Find the third highest salary in each department if there is such. 
 Example:
 DepartmentID	ThirdHighestSalary
-1	36100.00
+1	36100.000
 …	…
 Problem 19.	**Salary Challenge
 Write a query that returns:
