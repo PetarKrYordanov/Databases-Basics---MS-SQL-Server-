@@ -145,6 +145,7 @@ Write a query that returns **all unique wizard first letters** of their **first 
 Mr. Bodrog is highly interested in profitability. He wants to know the **average interest** of all **deposit groups** split by whether the deposit has **expired or not**. But that&#39;s not all. He wants you to select deposits with **start date after** 01/01/1985. Order the data **descending** by **Deposit Group** and **ascending** by **Expiration Flag**.
 
 The output should consist of the following columns:
+<<<<<<< HEAD
 
 ### Example:
 
@@ -247,6 +248,121 @@ Find the **third highest salary** in **each department** if there is such.
 
 1. Problem 19.\*\*Salary Challenge
 
+||||||| merged common ancestors
+Example:
+DepositGroup	IsDepositExpired	AverageInterest
+Venomous Tongue	0	16.698947
+…	…	
+Problem 12.	* Rich Wizard, Poor Wizard
+Mr. Bodrog definitely likes his werewolves more than you. This is your last chance to survive! Give him some data to play his favorite game Rich Wizard, Poor Wizard. The rules are simple: You compare the deposits of every wizard with the wizard after him. If a wizard is the last one in the database, simply ignore it. In the end you have to sum the difference between the deposits.
+Host Wizard	Host Wizard Deposit	Guest Wizard	Guest Wizard Deposit	Difference
+Harry	10 000	Tom	12 000	-2000
+Tom	12 000	…	…	…
+At the end your query should return a single value: the SUM of all differences.
+Example:
+SumDifference
+44393.97
+Problem 13.	Departments Total Salaries
+That’s it! You no longer work for Mr. Bodrog. You have decided to find a proper job as an analyst in SoftUni. 
+It’s not a surprise that you will use the SoftUni database. Things get more exciting here!
+Create a query that shows the total sum of salaries for each department. Order by DepartmentID.
+Your query should return:	
+•	DepartmentID
+Example:
+DepartmentID	TotalSalary
+1	241000.00
+…	…
+Problem 14.	Employees Minimum Salaries
+Select the minimum salary from the employees for departments with ID (2, 5, 7) but only for those hired after 01/01/2000.
+Your query should return:	
+•	DepartmentID
+Example: 
+DepartmentID	MinimumSalary
+2	25000.00
+5	12800.00
+…	…
+Problem 15.	Employees Average Salaries
+Select all employees who earn more than 30000 into a new table. Then delete all employees who have ManagerID = 42 (in the new table). Then increase the salaries of all employees with DepartmentID=1 by 5000. Finally, select the average salaries in each department.
+Example:
+DepartmentID	AverageSalary
+1	45166.6666
+…	…
+Problem 16.	Employees Maximum Salaries
+Find the max salary for each department. Filter those, which have max salaries NOT in the range 30000 – 70000.
+Example:
+DepartmentID	MaxSalary
+2	29800.00
+…	…
+Problem 17.	Employees Count Salaries
+Count the salaries of all employees who don’t have a manager.
+Example:
+Count
+4
+Problem 18.	*3rd Highest Salary
+Find the third highest salary in each department if there is such. 
+Example:
+DepartmentID	ThirdHighestSalary
+1	36100.00
+…	…
+Problem 19.	**Salary Challenge
+=======
+Example:
+DepositGroup	IsDepositExpired	AverageInterest
+Venomous Tongue	0	16.698947
+…	…	
+Problem 12.	* Rich Wizard, Poor Wizard
+Mr. Bodrog definitely likes his werewolves more than you. This is your last chance to survive! Give him some data to play his favorite game Rich Wizard, Poor Wizard. The rules are simple: You compare the deposits of every wizard with the wizard after him. If a wizard is the last one in the database, simply ignore it. In the end you have to sum the difference between the deposits.
+Host Wizard	Host Wizard Deposit	Guest Wizard	Guest Wizard Deposit	Difference
+Harry	10 000	Tom	12 000	-2000
+Tom	12 000	…	…	…
+At the end your query should return a single value: the SUM of all differences.
+Example:
+SumDifference
+44393.97
+Problem 13.	Departments Total Salaries
+That’s it! You no longer work for Mr. Bodrog. You have decided to find a proper job as an analyst in SoftUni. 
+It’s not a surprise that you will use the SoftUni database. Things get more exciting here!
+Create a query that shows the total sum of salaries for each department. Order by DepartmentID.
+Your query should return:	
+•	DepartmentID
+Example:
+DepartmentID	TotalSalary
+1	241000.00
+…	…
+Problem 14.	Employees Minimum Salaries
+Select the minimum salary from the employees for departments with ID (2, 5, 7) but only for those hired after 01/01/2000.
+Your query should return:	
+•	DepartmentID
+Example: 
+DepartmentID	MinimumSalary
+2	25000.00
+5	12800.00
+…	…
+Problem 15.	Employees Average Salaries
+Select all employees who earn more than 30000 into a new table. Then delete all employees who have ManagerID = 42 (in the new table). Then increase the salaries of all employees with DepartmentID=1 by 5000. Finally, select the average salaries in each department.
+Example:
+DepartmentID	AverageSalary
+1	45166.6666
+…	…
+Problem 16.	Employees Maximum Salaries
+Find the max salary for each department. Filter those, which have max salaries NOT in the range 30000 – 70000.
+Example:
+DepartmentID	MaxSalary
+2	29800.00
+…	…
+Problem 17.	Employees Count Salaries
+Count the salaries of all employees who don’t have a manager.
+Example:
+Count
+4
+Problem 18.	*3rd Highest Salary
+Find the third highest salary in each department if there is such. 
+Example:
+DepartmentID	ThirdHighestSalary
+1	36100.000
+…	…
+Problem 19.	**Salary Challenge
+>>>>>>> 21e1f259232a425d83bf12f2ae1f5ed754bba490
 Write a query that returns:
 
 - **FirstName**
