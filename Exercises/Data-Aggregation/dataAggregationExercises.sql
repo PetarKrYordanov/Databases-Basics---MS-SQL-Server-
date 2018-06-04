@@ -185,4 +185,21 @@ FROM
 ) AS RankedSalaries
 WHERE rank = 3;
 
-	
+--19
+
+SELECT TOP 10 FirstName,
+              LastName,
+              DepartmentID
+FROM Employees AS e
+WHERE e.Salary >
+(
+    SELECT AVG(Salary)
+    FROM Employees AS emp
+    WHERE emp.DepartmentID = e.DepartmentID
+    GROUP BY DepartmentID
+)
+ORDER BY DepartmentID;
+
+select  AVG(Salary) from Employees as emp
+where emp.EmployeeID = e.id
+group by DepartmentID

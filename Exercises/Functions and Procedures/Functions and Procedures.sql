@@ -112,7 +112,7 @@ AS
 
 -- Problem 8
 GO
-CREATE OR ALTER PROCEDURE usp_DeleteEmployeesFromDepartment @departmentId INT
+CREATE PROCEDURE usp_DeleteEmployeesFromDepartment @departmentId INT
 AS
      BEGIN
          DELETE FROM EmployeesProjects
@@ -144,8 +144,42 @@ AS
 GO
 
 --Problem 9
+USE Bank;
+GO
+CREATE PROCEDURE usp_GetHoldersFullName
+AS
+     BEGIN
+         SELECT ah.FirstName+' '+ah.LastName AS [Full Name]
+         FROM AccountHolders AS ah;
+     END;
+GO
+EXEC usp_GetHoldersFullName;
+
+--Problem 10
+GO
+CREATE PROCEDURE usp_GetHoldersWithBalanceHigherThan @minSalary INT = 0
+AS
+     BEGIN
+         SELECT ah.FirstName AS [First Name],
+                ah.LastName AS [Last Name]
+         FROM
+(
+    SELECT AccountHolderId AS AccountHolderId,
+           SUM(Balance) AS SumBalance
+    FROM Accounts
+    GROUP BY AccountHolderId
+) AS a
+INNER JOIN AccountHolders AS ah ON ah.Id = a.AccountHolderId
+                                   AND a.sumbalance > @minSalary;
+     END;
+GO
+EXEC usp_GetHoldersWithBalanceHigherThan 5
+SELECT AccountHolderId as AccountHolderId, SUM(Balance) as SumBalance
+FROM Accounts 
+group by AccountHolderId
+select * from Accounts
 
 
 
-
+  select * from AccountHolders
 
