@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# SQL Server Management Studio Solution File, Format Version 14.00
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{4F2E2C19-372F-40D8-9FA7-9D2138C6997A}") = "Exam", "Exam\Exam.ssmssqlproj", "{4AF2B07F-238A-4BD1-B313-185E66C20A63}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EC77B078-9088-4428-B826-876C97E5BE30}"
+	ProjectSection(SolutionItems) = preProject
+		Exam\Section 1_ DDL_Скелет.txt = Exam\Section 1_ DDL_Скелет.txt
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Default|Default = Default|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CDEA7D97-C3F5-4153-B08E-6CEB04474F10}.Default|Default.ActiveCfg = Default
+		{4AF2B07F-238A-4BD1-B313-185E66C20A63}.Default|Default.ActiveCfg = Default
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
