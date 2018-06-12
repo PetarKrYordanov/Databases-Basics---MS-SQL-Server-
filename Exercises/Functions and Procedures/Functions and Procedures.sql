@@ -9,11 +9,11 @@ AS
          FROM Employees
          WHERE Salary > 35000;
      END;
-go
-exec usp_GetEmployeesSalaryAbove35000
+GO
+EXEC usp_GetEmployeesSalaryAbove35000;
 --Problem 2
-go
-CREATE PROCEDURE usp_GetEmployeesSalaryAboveNumber @InputNumber DECIMAL(18, 4)  = 35000
+GO
+CREATE PROCEDURE usp_GetEmployeesSalaryAboveNumber(@InputNumber DECIMAL(18, 4)  = 35000)
 AS
      BEGIN
          SELECT FirstName,
@@ -24,6 +24,7 @@ AS
 GO
 EXEC usp_GetEmployeesSalaryAboveNumber
      48100;
+USE SoftUni;
 GO
 --Problem 3
 CREATE PROCEDURE usp_GetTownsStartingWith @StartString VARCHAR(6)
@@ -54,7 +55,7 @@ EXEC usp_GetEmployeesFromTown
 GO
 --Problem 5
 CREATE FUNCTION ufn_GetSalaryLevel
-(@salary int
+(@salary INT
 )
 RETURNS VARCHAR(7)
 AS
@@ -69,9 +70,10 @@ AS
                             END;
          RETURN @SalaryLevel;
      END;
-GO		
-select  13500 as Salary, dbo.ufn_GetSalaryLevel(13500) 
-   GO
+GO
+SELECT 13500 AS Salary,
+       dbo.ufn_GetSalaryLevel(13500);
+GO
 --Problem 6
 CREATE PROCEDURE usp_EmployeesBySalaryLevel @SalaryLevel VARCHAR(7)
 AS
@@ -105,10 +107,9 @@ AS
              END;
          RETURN 1;
      END;
-
-	go
- select dbo.ufn_IsWordComprised('let','tell')
- select dbo.ufn_IsWordComprised('sdasgg','Sofia')
+GO
+SELECT dbo.ufn_IsWordComprised('let', 'tell');
+SELECT dbo.ufn_IsWordComprised('sdasgg', 'Sofia');
 
 -- Problem 8
 GO
@@ -157,29 +158,113 @@ EXEC usp_GetHoldersFullName;
 
 --Problem 10
 GO
-CREATE PROCEDURE usp_GetHoldersWithBalanceHigherThan @minSalary INT = 0
+CREATE PROC usp_GetHoldersWithBalanceHigherThan(@minBalance MONEY)
 AS
      BEGIN
-         SELECT ah.FirstName AS [First Name],
-                ah.LastName AS [Last Name]
-         FROM
-(
-    SELECT AccountHolderId AS AccountHolderId,
-           SUM(Balance) AS SumBalance
-    FROM Accounts
-    GROUP BY AccountHolderId
-) AS a
-INNER JOIN AccountHolders AS ah ON ah.Id = a.AccountHolderId
-                                   AND a.sumbalance > @minSalary;
+         WITH CTE_MinBalanceAccountHolders(HolderId)
+              AS (
+              SELECT AccountHolderId
+              FROM Accounts
+              GROUP BY AccountHolderId
+              HAVING SUM(Balance) > @minBalance)
+              SELECT ah.FirstName AS [First Name],
+                     ah.LastName AS [Last Name]
+              FROM CTE_MinBalanceAccountHolders AS minBalanceHolders
+                   JOIN AccountHolders AS ah ON ah.Id = minBalanceHolders.HolderId
+              ORDER BY ah.LastName,
+                       ah.FirstName;
      END;
-GO
-EXEC usp_GetHoldersWithBalanceHigherThan 5
-SELECT AccountHolderId as AccountHolderId, SUM(Balance) as SumBalance
-FROM Accounts 
-group by AccountHolderId
-select * from Accounts
+		  go
+
+ --11. 
+USE Bank -- DO NOT SUBMIT IN JUDGE the USE Bank statement or you will get compile time error.
+go
+CREATE FUNCTION ufn_CalculateFutureValue (@sum money, @annualIntRate float, @years int)
+RETURNS money
+AS
+BEGIN
+
+  RETURN @sum * POWER(1 + @annualIntRate, @years);  
+
+END;
+
+--12. Calculating Interest
+GO -- DO NOT SUBMIT IN JUDGE "Go"
+CREATE PROC usp_CalculateFutureValueForAccount
+(@accountId    INT,
+ @interestRate FLOAT
+)
+AS
+     BEGIN
+         DECLARE @years INT= 5;
+         SELECT a.Id AS [Account Id],
+                ah.FirstName AS [First Name],
+                ah.LastName AS [Last Name],
+                a.Balance AS [Current Balance],
+                dbo.ufn_CalculateFutureValue(a.Balance, @interestRate, @years) AS [Balance in 5 years]
+         FROM AccountHolders AS ah
+              JOIN Accounts AS a ON ah.Id = a.AccountHolderId
+         WHERE a.Id = @accountId;
+     END;
+
+go
+ --13. *Cash in User Games Odd Rows
+USE Diablo --DO NOT SUBMIT IN JUDGE 
+GO --DO NOT SUBMIT IN JUDGE "Go"
+CREATE FUNCTION ufn_CashInUsersGames
+(@gameName NVARCHAR(50)
+)
+RETURNS TABLE
+AS
+     RETURN(
+     WITH CTE_CashInRows(Cash,
+                         RowNumber)
+          AS (
+          SELECT ug.Cash,
+                 ROW_NUMBER() OVER(ORDER BY ug.Cash DESC)
+          FROM UsersGames AS ug
+               JOIN Games AS g ON ug.GameId = g.Id
+          WHERE g.Name = @gameName)
+          SELECT SUM(Cash) AS SumCash
+          FROM CTE_CashInRows
+          WHERE RowNumber % 2 = 1 -- odd row numbers only
+     );
+ go
+-- testing
+SELECT * FROM dbo.ufn_CashInUsersGames ('Lily Stargazer');
+SELECT * FROM dbo.ufn_CashInUsersGames ('Love in a mist');
+
+/*Section II. Triggers and Transactions
+Part 1. Queries for Bank Database
+Problem 14. Create Table Logs
+Create a table – Logs (LogId, AccountId, OldSum, NewSum). 
+Add a trigger to the Accounts table that enters a new entry into the Logs table every time the sum on an account changes.
+ Submit only the query that creates the trigger.
+Example
+*/
+use Bank
+
+ Create table Logs 
+ (LogId int primary key identity,
+ AccountId int,
+ OldBalance money,
+ NewSum money)
+
+ go
+ select * from Accounts
+ 
+ begin tran
+
+  update Accounts 
+  set Balance = 100 where id =1
+   go
+ Create Trigger tr_CrateAccountLogs on Accounts after
+update 
+as 
+insert into Logs 
+select id,AccountHolderId, Balance,Balance from inserted
 
 
-
-  select * from AccountHolders
-
+ rollback
+ select * from Accounts
+ select * from Logs

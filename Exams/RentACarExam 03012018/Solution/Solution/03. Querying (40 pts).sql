@@ -15,9 +15,13 @@ Required columns:
 ?	Last Name
 */
 
-select FirstName, LastName from Clients 
-where DATEPART(YEAR, BirthDate) between 1977 and 1994
-order by FirstName,LastName,Id
+SELECT FirstName,
+       LastName
+FROM Clients
+WHERE DATEPART(YEAR, BirthDate) BETWEEN 1977 AND 1994
+ORDER BY FirstName,
+         LastName,
+         Id;
 
 /*	07.	Spacious Office
 Select all offices which have a parking lot with more than 25 places. Order them by their Town’s name (ascending) and then by Office Id (ascending).
@@ -49,15 +53,15 @@ SELECT m.Model,
        m.Seats,
        v.Mileage
 FROM Vehicles AS v
-     left JOIN Orders AS o ON o.VehicleId = v.Id
+     LEFT JOIN Orders AS o ON o.VehicleId = v.Id
      JOIN Models AS m ON m.Id = v.ModelId
-   where o.ReturnDate is null
+WHERE o.ReturnDate IS NULL
 ORDER BY v.Mileage,
          m.Seats DESC,
          v.ModelId;
-		
-				   
-  select * from Orders where Vehicles = 34
+SELECT *
+FROM Orders
+WHERE Vehicles = 34;
 
 select VehicleId from orders  
 
@@ -70,10 +74,14 @@ Order the results by OfficesNumber descending and then by TownName ascending.
 */
 
 
-select t.Name as TownName, COUNT(*) from Offices as o
-join Towns as t	on t.Id = o.TownId
-group by t.Id ,t.name
-order by COUNT(*) desc,TownName
+SELECT t.Name AS TownName,
+       COUNT(*)
+FROM Offices AS o
+     JOIN Towns AS t ON t.Id = o.TownId
+GROUP BY t.Id,
+         t.name
+ORDER BY COUNT(*) DESC,
+         TownName;
 
 /*	010.	Buyers Best Choice 
 Select all vehicle models and show how many times each of them have been ordered.
@@ -86,15 +94,17 @@ Order by total TimesOrdered descending, then by Manufacturer descending and then
 
 
 SELECT m.Manufacturer,
-       m.Model,	  
-	  isnull( count(o.VehicleId),0)	 as TimesOrdered
+       m.Model,
+       isnull(COUNT(o.VehicleId), 0) AS TimesOrdered
 FROM Vehicles AS v
-    full  JOIN Orders AS o ON v.Id = o.VehicleId
+     FULL JOIN Orders AS o ON v.Id = o.VehicleId
      JOIN Models AS m ON m.id = v.ModelId
 GROUP BY m.id,
-		m.Model	,
+         m.Model,
          m.Manufacturer
-ORDER BY TimesOrdered DESC,m.Manufacturer desc,m.Model
+ORDER BY TimesOrdered DESC,
+         m.Manufacturer DESC,
+         m.Model;
 
 /*11.	Kinda Person
 Select the clients who have placed an order and print their most frequent choice of vehicle’s class. If a client’s most frequent choice is equally spread over different vehicle classes show all the choices on separate lines.
@@ -226,9 +236,99 @@ Required columns:
 ?	FemalePercent
 Order them by TownName alphabetically and then by Town Id ascending.
 */
+  go
+CREATE FUNCTION dbo.ufn_GetMalePercents
+(@townId INT
+)
+RETURNS INT
+AS
+     BEGIN
+         DECLARE @countPersons INT=
+(
+    SELECT COUNT(*)
+    FROM Towns AS t
+         JOIN Orders AS o ON o.TownId = t.Id
+         JOIN Clients AS c ON c.id = o.ClientId
+    WHERE t.Id = @townId
+);
+         DECLARE @sexCount INT;
+         SET @sexCount =
+(
+    SELECT COUNT(*)
+    FROM Towns AS t
+         JOIN Orders AS o ON o.TownId = t.Id
+         JOIN Clients AS c ON c.id = o.ClientId
+    WHERE t.Id = @townId
+          AND c.Gender = 'M'
+);
+         IF(@sexCount = 0)
+             BEGIN
+                 RETURN 0;
+             END;
+         DECLARE @percent INT;
+         SET @percent = FLOOR((@sexCount * 100) / @countPersons);
+         RETURN @percent;
+     END;
+
+CREATE  FUNCTION dbo.ufn_GetFemalePercents
+(@townId INT
+)
+RETURNS INT
+AS
+     BEGIN
+         DECLARE @countPersons INT=
+(
+    SELECT COUNT(*)
+    FROM Towns AS t
+         JOIN Orders AS o ON o.TownId = t.Id
+         JOIN Clients AS c ON c.id = o.ClientId
+    WHERE t.Id = @townId
+);
+         DECLARE @sexCount INT;
+         SET @sexCount =
+(
+    SELECT COUNT(*)
+    FROM Towns AS t
+         JOIN Orders AS o ON o.TownId = t.Id
+         JOIN Clients AS c ON c.id = o.ClientId
+    WHERE t.Id = @townId
+          AND c.Gender = 'F'
+);
+         IF(@sexCount = 0)
+             BEGIN
+                 RETURN 0;
+             END;
+         DECLARE @percent INT;
+         SET @percent = FLOOR((@sexCount * 100) / @countPersons);
+         RETURN @percent;
+     END;
+SELECT 
+       t.Name,
+      case 
+	  when dbo.ufn_GetMalePercents(t.Id) =0
+	  then null 
+	  else dbo.ufn_GetMalePercents(t.Id)end as MalePercent,
+      case 
+	  when dbo.ufn_GetFemalePercents(t.Id) =0
+	  then null
+	  else  dbo.ufn_GetFemalePercents(t.Id) 
+	  end as FemalePercent
+FROM Towns AS t
+ORDER BY t.Name,
+         t.Id;
 
 
+ /*		17.	Find My Ride
+Create a user defined function with the name udf_CheckForVehicle(@townName, @seatsNumber) that receives a town’s name and a seats number and checks if there is any vehicle with the given seats at an office of the given town.
+•	If there is a vehicle print the output in the following format: “OfficeName - Model”.
+•	If there is no vehicle found print the following message: “NO SUCH VEHICLE FOUND”
+•	If there is more than one vehicle available order the results by office name ascending and return the first one
+Parameters:
+?	Town’s name
+?	Seats number
+*/
 
+create function udf_CheckForVehicle(@townName, @seatsNumber) 
 
 
 		
