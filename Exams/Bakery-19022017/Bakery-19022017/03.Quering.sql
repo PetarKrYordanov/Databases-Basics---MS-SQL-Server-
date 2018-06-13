@@ -4,7 +4,7 @@ Required columns:
 •	Name
 •	Price
 •	Description
-	*/SELECT Name,
+	*/use BakerySELECT Name,
        Price,
        Description
 FROM Products
@@ -200,6 +200,65 @@ WHERE AverageRate BETWEEN 5 AND 8
 ORDER BY DistributorName,
          IngredientName,
          ProductName;
+
+/*	14.	The Most Positive Country
+Select the country which gave the most positive feedbacks. 
+If there are several – print them all. Required columns:
+•	CountryName
+•	FeedbackRate – average feedback rate for each country
+*/
+SELECT Name,
+       FeedbackRate
+FROM
+(
+    SELECT avgt.Name,
+           avgT.FeedbackRate,
+           RANK() OVER(ORDER BY avgT.FeedbackRate DESC) AS avRank
+    FROM
+(
+    SELECT co.Name,
+           AVG(f.Rate) AS FeedbackRate
+    FROM Feedbacks AS f
+         JOIN Customers AS c ON c.Id = f.CustomerId
+         JOIN Countries AS co ON co.Id = c.CountryId
+    GROUP BY co.Name
+) AS avgT
+) AS av
+WHERE avRank = 1;
+
+/*		15.	Country Representative
+Select all countries with their most active distributor 
+(the one with the greatest number of ingredients).
+ If there are several distributors with most ingredients delivered,
+  list them all. Order by country name then by distributor name.
+Required columns:
+•	CountryName
+•	DistributorName
+*/
+SELECT CountryName,
+       DistributorName
+FROM
+(
+    SELECT c.Name AS CountryName,
+           d.Name AS DistributorName,
+           DENSE_RANK() OVER(PARTITION BY c.name ORDER BY discount.distributorcount DESC) AS r
+    FROM
+(
+    SELECT COUNT(c.id) AS distributorCount,
+           d.Id AS dId
+    FROM Countries AS c
+         JOIN Distributors AS d ON d.CountryId = c.Id
+         JOIN Ingredients AS i ON i.DistributorId = d.Id
+    GROUP BY d.Id
+) AS disCount
+RIGHT JOIN Distributors AS d ON disCount.dId = d.Id
+JOIN Countries AS c ON c.Id = d.CountryId
+) AS ranke
+WHERE ranke.r = 1
+ORDER BY CountryName,
+         DistributorName;
+
+
 
 
 

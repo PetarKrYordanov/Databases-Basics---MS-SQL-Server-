@@ -25,6 +25,12 @@
           <AssociatedConnUserName />
           <FullPath>01.DDL.sql</FullPath>
         </FileNode>
+        <FileNode Name="02.DML.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-PSI12NO\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-PSI12NO\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>02.DML.sql</FullPath>
+        </FileNode>
         <FileNode Name="03.Quering.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-PSI12NO\SQLEXPRESS:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>DESKTOP-PSI12NO\SQLEXPRESS</AssociatedConnSrvName>
