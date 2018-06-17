@@ -49,21 +49,24 @@ Required columns:
 Order the results by Mileage (ascending), then by the Model’s number of seats (descending) and finally by Model Id (ascending).
 */
 
-SELECT m.Model,
-       m.Seats,
-       v.Mileage
-FROM Vehicles AS v
-     LEFT JOIN Orders AS o ON o.VehicleId = v.Id
-     JOIN Models AS m ON m.Id = v.ModelId
-WHERE o.ReturnDate IS NULL
-ORDER BY v.Mileage,
-         m.Seats DESC,
-         v.ModelId;
-SELECT *
-FROM Orders
-WHERE Vehicles = 34;
-
-select VehicleId from orders  
+WITH NotReturned
+     AS (
+     SELECT VehicleId
+     FROM Orders
+     WHERE ReturnDate IS NULL)
+     SELECT m.Model,
+            m.Seats,
+            v.Mileage
+     FROM Vehicles AS v
+          JOIN Models AS m ON m.Id = v.ModelId
+     WHERE v.Id != ALL
+(
+    SELECT *
+    FROM NotReturned
+)
+     ORDER BY v.Mileage ASC,
+              m.Seats DESC,
+              v.ModelId ASC;
 
 /*	09.	Offices per Town
 Select all towns and show the total number of offices per each town.
@@ -147,23 +150,29 @@ Required columns:
 ?	Revenue
 ?	AverageMileage
 */
-  select AgeGroup, sum(bill), avg(TotalMileage) from (
-SELECT case 
-when DATEPART(YEAR,c.BirthDate) between 1970 and 1979
-then '70''s'
-when DATEPART(YEAR,c.BirthDate) between 1980 and 1989
-then '80''s'
-when DATEPART(YEAR,c.BirthDate) between 1990 and 1999
-then '90''s'
-else 'Others'
-end as [AgeGroup],
-sum(o.bill) as bill, o.TotalMileage
-FROM Clients AS c
-    left JOIN Orders AS o ON o.ClientId = c.Id
-group by  BirthDate,TotalMileage	
-) as tab 
-group by tab.AgeGroup
-order by AgeGroup
+SELECT AgeGroup,
+       SUM(bill),
+       AVG(TotalMileage)
+FROM
+(
+    SELECT CASE
+               WHEN DATEPART(YEAR, c.BirthDate) BETWEEN 1970 AND 1979
+               THEN '70''s'
+               WHEN DATEPART(YEAR, c.BirthDate) BETWEEN 1980 AND 1989
+               THEN '80''s'
+               WHEN DATEPART(YEAR, c.BirthDate) BETWEEN 1990 AND 1999
+               THEN '90''s'
+               ELSE 'Others'
+           END AS [AgeGroup],
+           SUM(o.bill) AS bill,
+           o.TotalMileage
+    FROM Clients AS c
+         LEFT JOIN Orders AS o ON o.ClientId = c.Id
+    GROUP BY BirthDate,
+             TotalMileage
+) AS tab
+GROUP BY tab.AgeGroup
+ORDER BY AgeGroup;
 
 /*		13.	Consumption in Mind
 Select the seven most ordered vehicle models. Group them by manufacturers and show only these who have average fuel consumption between 5 and 15.
@@ -174,16 +183,19 @@ Order them by Manufacturer alphabetically and then by AverageConsumption ascendi
 */
 
 
-SELECT  Manufacturer,
-             AVG(Consumption) AS AverageConsumption
+SELECT Manufacturer,
+       AVG(Consumption) AS AverageConsumption
 FROM Models
-WHERE Consumption BETWEEN 5 AND 15 and Id  in(
-	 select top 7 m.Id from orders as o 
- join Vehicles as v on v.Id = o.VehicleId
- join Models as m on m.Id = v.ModelId
- group by m.Id
- order by COUNT(o.VehicleId)  desc
-) 
+WHERE Consumption BETWEEN 5 AND 15
+      AND Id IN
+(
+    SELECT TOP 7 m.Id
+    FROM orders AS o
+         JOIN Vehicles AS v ON v.Id = o.VehicleId
+         JOIN Models AS m ON m.Id = v.ModelId
+    GROUP BY m.Id
+    ORDER BY COUNT(o.VehicleId) DESC
+)
 GROUP BY Manufacturer
 ORDER BY Manufacturer,
          AverageConsumption; 
@@ -237,99 +249,50 @@ Required columns:
 Order them by TownName alphabetically and then by Town Id ascending.
 */
   go
-CREATE FUNCTION dbo.ufn_GetMalePercents
-(@townId INT
-)
-RETURNS INT
-AS
-     BEGIN
-         DECLARE @countPersons INT=
-(
-    SELECT COUNT(*)
-    FROM Towns AS t
-         JOIN Orders AS o ON o.TownId = t.Id
-         JOIN Clients AS c ON c.id = o.ClientId
-    WHERE t.Id = @townId
-);
-         DECLARE @sexCount INT;
-         SET @sexCount =
-(
-    SELECT COUNT(*)
-    FROM Towns AS t
-         JOIN Orders AS o ON o.TownId = t.Id
-         JOIN Clients AS c ON c.id = o.ClientId
-    WHERE t.Id = @townId
-          AND c.Gender = 'M'
-);
-         IF(@sexCount = 0)
-             BEGIN
-                 RETURN 0;
-             END;
-         DECLARE @percent INT;
-         SET @percent = FLOOR((@sexCount * 100) / @countPersons);
-         RETURN @percent;
-     END;
 
-CREATE  FUNCTION dbo.ufn_GetFemalePercents
-(@townId INT
-)
-RETURNS INT
-AS
-     BEGIN
-         DECLARE @countPersons INT=
+SELECT ttt.Name,
+       CASE
+           WHEN MalePercent = '0'
+           THEN NULL
+           ELSE MalePercent
+       END AS MalePercent,
+       CASE
+           WHEN ttt.FemalePercent = '0'
+           THEN NULL
+           ELSE FemalePercent
+       END AS FemalePercent
+FROM
 (
-    SELECT COUNT(*)
-    FROM Towns AS t
-         JOIN Orders AS o ON o.TownId = t.Id
-         JOIN Clients AS c ON c.id = o.ClientId
-    WHERE t.Id = @townId
-);
-         DECLARE @sexCount INT;
-         SET @sexCount =
-(
-    SELECT COUNT(*)
-    FROM Towns AS t
-         JOIN Orders AS o ON o.TownId = t.Id
-         JOIN Clients AS c ON c.id = o.ClientId
-    WHERE t.Id = @townId
-          AND c.Gender = 'F'
-);
-         IF(@sexCount = 0)
-             BEGIN
-                 RETURN 0;
-             END;
-         DECLARE @percent INT;
-         SET @percent = FLOOR((@sexCount * 100) / @countPersons);
-         RETURN @percent;
-     END;
-SELECT 
-       t.Name,
-      case 
-	  when dbo.ufn_GetMalePercents(t.Id) =0
-	  then null 
-	  else dbo.ufn_GetMalePercents(t.Id)end as MalePercent,
-      case 
-	  when dbo.ufn_GetFemalePercents(t.Id) =0
-	  then null
-	  else  dbo.ufn_GetFemalePercents(t.Id) 
-	  end as FemalePercent
-FROM Towns AS t
-ORDER BY t.Name,
-         t.Id;
+    SELECT t.name,
+           CAST((100*SUM(CASE
+                             WHEN c.gender = 'M'
+                             THEN 1
+                             ELSE 0
+                         END)/COUNT(*)) AS INT) AS MalePercent,
+           CAST((100*SUM(CASE
+                             WHEN c.gender = 'F'
+                             THEN 1
+                             ELSE 0
+                         END)/COUNT(*)) AS VARCHAR(3)) AS FemalePercent
+    FROM Orders AS o
+         JOIN Towns AS t ON o.TownId = t.Id
+         JOIN Clients AS c ON c.Id = o.ClientId
+    GROUP BY t.name
+) AS ttt;
 
 
- /*		17.	Find My Ride
-Create a user defined function with the name udf_CheckForVehicle(@townName, @seatsNumber) that receives a town’s name and a seats number and checks if there is any vehicle with the given seats at an office of the given town.
-•	If there is a vehicle print the output in the following format: “OfficeName - Model”.
-•	If there is no vehicle found print the following message: “NO SUCH VEHICLE FOUND”
-•	If there is more than one vehicle available order the results by office name ascending and return the first one
-Parameters:
-?	Town’s name
-?	Seats number
+/*16.	Home Sweet Home
+Select all vehicles and show their current location:
+•	If a vehicle has never been on a rent, it’s location should be labeled as “home”
+?	If a vehicle has been turned back from rent to an office different from it’s home one - print the name of the town and the name of the office, 
+it was turned back to in the following format - “TownName - OfficeName”
+?	If a vehicle is rented and still not turned back, it’s location should be labeled as “on a rent”
+Required columns:
+?	Vehicle - print the manufacturer’s name and the model’s name in the following format - “Manufacturer - Model”
+?	Location
+Order them by vehicle alphabetically and then by vehicle Id (ascending).
 */
 
-create function udf_CheckForVehicle(@townName, @seatsNumber) 
-
-
-		
+				select * from Vehicles as v
+				join Orders as o on o.VehicleId = v.Id
 		 
