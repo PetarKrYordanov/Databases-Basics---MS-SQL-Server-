@@ -105,10 +105,10 @@ the trigger should not get fired if the Total Mileage in an order is edited afte
  having a value.
    */
 
-create Trigger TR_AddMileage on orders after update
+create  Trigger TR_AddMileage on orders after update
  as
 	declare @startMileage int = (select TotalMileage from deleted)
-	 if (@startMileage is not null)
+	 if (@startMileage is null)
 	  begin
 		declare @vehicleId int = (Select VehicleId from inserted)
 		declare @mileage int = (Select TotalMileage from inserted)
