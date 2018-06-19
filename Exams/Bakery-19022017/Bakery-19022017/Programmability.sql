@@ -149,16 +149,44 @@ Required columns:
 •	DistributorName
 •	DistributorCountry
 */
+select ProductName,ProductAverageRate,DistributorName,DistributorCountry from (		   
+SELECT distinct p.Id, p.Name AS ProductName,
+       AvgRate.ProductAverageRate,
+       d.Name AS DistributorName,
+       c.Name AS DistributorCountry
+FROM
+(
+    SELECT distinct p.id
+    FROM Products AS p
+         JOIN ProductsIngredients AS pi ON pi.ProductId = p.id
+         JOIN Ingredients AS i ON i.Id = pi.IngredientId 
+         JOIN Distributors AS d ON d.Id = i.DistributorId
+    GROUP BY p.Id
+    HAVING COUNT(DISTINCT d.id) = 1
+) AS OneDistributorProducts
+left JOIN
+(
+    SELECT p.Id,
+           AVG(f.rate) AS ProductAverageRate
+    FROM Products AS p
+       left  JOIN Feedbacks AS f ON f.ProductId = p.id
+    GROUP BY p.Id
+) AS AvgRate ON AvgRate.Id = OneDistributorProducts.Id
+ JOIN Products AS p ON p.Id = OneDistributorProducts.Id
+ JOIN ProductsIngredients AS pi ON pi.ProductId = OneDistributorProducts.Id
+ JOIN Ingredients AS i ON pi.IngredientId = i.Id
+ JOIN Distributors AS d ON d.Id = i.DistributorId
+ JOIN Countries AS c ON c.Id = d.CountryId
+ ) as DistinctP
+ORDER BY DistinctP.Id;
 
-select p.Name , from Products as p
-join ProductsIngredients as pi on pi.ProductId =p.Id
-join Ingredients as i on i.Id = pi.IngredientId
-group by d.id
 
-
-select * from Products
-select * from Ingredients
-
+    SELECT *
+    FROM Products AS p
+         JOIN ProductsIngredients AS pi ON pi.ProductId = p.id
+         JOIN Ingredients AS i ON i.Id = pi.IngredientId
+         JOIN Distributors AS d ON d.Id = i.DistributorId
+		 where p.Id = 22
 
 
 

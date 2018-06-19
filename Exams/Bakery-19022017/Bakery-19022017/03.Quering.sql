@@ -4,12 +4,17 @@ Required columns:
 •	Name
 •	Price
 •	Description
-	*/use BakerySELECT Name,
+	*/
+use Bakery
+
+SELECT Name,
        Price,
        Description
 FROM Products
 ORDER BY price DESC,
-         name; /*6.	Ingredients
+         name;
+
+ /*6.	Ingredients
 Find all ingredients coming from the countries with Id’s of 1, 10, 20.
  Order them by ingredient Id (ascending).
 Required columns:
