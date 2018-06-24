@@ -1,3 +1,5 @@
+create database ReportService
+go
 use ReportService
  
  CREATE TABLE Users

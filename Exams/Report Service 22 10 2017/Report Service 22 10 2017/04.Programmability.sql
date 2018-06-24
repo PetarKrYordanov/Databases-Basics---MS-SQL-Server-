@@ -8,24 +8,34 @@ Parameters:
 ?	Status Id
   */   GO
 
-  CREATE function udf_GetReportsCount(@employeeId int, @statusId int) 
-  returns int
-  as 
-	begin
-	  declare @result int = (select isnull(ISNULL(count(r.Id),0),0) from Reports as r
-	   where r.EmployeeId = @employeeId	and r.StatusId = @statusId
-	   group by r.EmployeeId )
-	   IF (@result IS NULL)
-	   BEGIN
-		  SET @result = 0;
-	   END
-	   return @result;
-	end
-
-	GO
-	SELECT Id, FirstName, Lastname, dbo.udf_GetReportsCount(Id, 2) AS ReportsCount
+  CREATE FUNCTION udf_GetReportsCount
+(@employeeId INT,
+ @statusId   INT
+)
+RETURNS INT
+AS
+     BEGIN
+         DECLARE @result INT=
+(
+    SELECT isnull(ISNULL(COUNT(r.Id), 0), 0)
+    FROM Reports AS r
+    WHERE r.EmployeeId = @employeeId
+          AND r.StatusId = @statusId
+    GROUP BY r.EmployeeId
+);
+         IF(@result IS NULL)
+             BEGIN
+                 SET @result = 0;
+             END;
+         RETURN @result;
+     END;
+GO
+SELECT Id,
+       FirstName,
+       Lastname,
+       dbo.udf_GetReportsCount(Id, 2) AS ReportsCount
 FROM Employees
-ORDER BY Id
+ORDER BY Id;
 
 /*18.	Assign Employee
 Create a user defined stored procedure with the name usp_AssignEmployeeToReport(@employeeId, @reportId)
@@ -37,21 +47,68 @@ Parameters:
 ?	Report’s Id
 */	GO
 
+CREATE PROCEDURE usp_AssignEmployeeToReport @employeeId INT,
+                                            @reportId   INT
+AS
+     BEGIN
+         BEGIN TRAN;
+         DECLARE @emplDepartmentID INT;
+         SET @emplDepartmentID =
+(
+    SELECT DepartmentId
+    FROM Employees
+    WHERE Id = @employeeId
+);
+         DECLARE @categoryId INT=
+(
+    SELECT CategoryId
+    FROM Reports
+    WHERE id = @reportId
+);
+         DECLARE @reportDepartMentID INT=
+(
+    SELECT DepartmentId
+    FROM Categories
+    WHERE id = @categoryId
+);
+         UPDATE Reports
+           SET
+               EmployeeId = @employeeId
+         WHERE id = @reportId;
+         IF(@reportDepartMentID <> @emplDepartmentID
+            AND @employeeId IS NOT NULL)
+             BEGIN
+                 ROLLBACK;
+                 THROW 50001, 'Employee doesn''t belong to the appropriate department!', 1;
+             END;
+         COMMIT;
+     END;
 
-SELECT * FROM Reports WHERE id = 2
+
 
 /*19.	Close Reports
 Create a trigger which changes the StatusId to “completed” of each report after a CloseDate is entered for the report. 
 */	GO
 										
-Create trigger TR_CompletedReports on Reports after update
-as
-	declare @ReportId int= ( select i.Id from inserted	as i						
-						where i.CloseDate is not null)
-	declare @StatusId int= (select id from Status where Label = 'completed')
-	update Reports
-	set StatusId = @StatusId
-	where id= @ReportId
+CREATE TRIGGER TR_CompletedReports ON Reports
+AFTER UPDATE
+AS
+     DECLARE @ReportId INT=
+(
+    SELECT i.Id
+    FROM inserted AS i
+    WHERE i.CloseDate IS NOT NULL
+);
+     DECLARE @StatusId INT=
+(
+    SELECT id
+    FROM Status
+    WHERE Label = 'completed'
+);
+     UPDATE Reports
+       SET
+           StatusId = @StatusId
+     WHERE id = @ReportId;
 
  /*Section 5. Bonus (10 pts)
 20.	Categories Revision

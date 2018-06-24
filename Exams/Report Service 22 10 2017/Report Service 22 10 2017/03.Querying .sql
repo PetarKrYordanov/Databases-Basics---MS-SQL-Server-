@@ -167,3 +167,69 @@ FROM
           AND CAST(RIGHT(u.Username, 1) AS INT) = c.Id
 ) aall
 ORDER BY Username;
+
+/*14.	Open/Closed Statistics
+Select all employees who have at least one assigned closed or open report through year 2016 and their total sum.
+ Open reports don’t have a CloseDate. Reports that have been opened before 2016 but were closed in 2016 are counted as closed only!
+Order by Name (ascending), and then by employee Id
+Required columns:
+?	Name - name - Full name consisting of FirstName and LastName and a space between them
+?	Closed /Open reports number
+  */
+SELECT ISNULL(openReport.Name, ClosedReport.Name) AS [Name1],
+       CONCAT(ISNULL(ClosedReport.ClosedReportCount, 0), '/', ISNULL(openReport.OpenReportCount, 0) + ISNULL(ClosedReport.ClosedReportCount, 0))
+FROM
+(
+    SELECT e.Id AS eId,
+           CONCAT(e.firstname, ' ', e.lastname) AS [Name],
+           COUNT(*) AS OpenReportCount
+    FROM Reports AS r
+         JOIN Employees AS e ON e.Id = r.EmployeeId
+                                AND r.CloseDate IS NULL
+                                AND r.OpenDate > '20160101'
+                                AND YEAR(r.opendate) < 2017
+    GROUP BY CONCAT(e.firstname, ' ', e.lastname),
+             e.Id
+) openReport
+FULL JOIN
+(
+    SELECT e.Id AS eId,
+           CONCAT(e.firstname, ' ', e.lastname) AS [Name],
+           isnull(COUNT(r.Id), 0) AS ClosedReportCount
+    FROM Reports AS r
+         JOIN Employees AS e ON e.Id = r.EmployeeId
+                                AND r.CloseDate IS NOT NULL
+                                AND r.OpenDate > '20160101'
+                                AND YEAR(r.opendate) < 2017
+    GROUP BY CONCAT(e.firstname, ' ', e.lastname),
+             e.Id
+) AS ClosedReport ON openReport.Name = ClosedReport.Name
+ORDER BY Name1 ASC,
+         ISNULL(ClosedReport.eId, openReport.eId);
+
+/*15.	Average Closing Time
+Select all departments that have been reported in and the average time for closing a report for each department rounded to the closest integer part. 
+If there is no information (e.g. none closed reports) about any department fill in the Average Duration column “no info”.
+Required columns:
+?	Department Name 
+?	Average Duration - in days
+*/
+
+SELECT d.Name,
+       isnull(CAST(AVG(DATEDIFF(day, r.OpenDate, CloseDate)) AS VARCHAR(10)), 'no info') AS [Aevrage Duration]
+FROM Departments AS d
+     JOIN Categories AS c ON c.DepartmentId = d.Id
+     LEFT JOIN Reports AS r ON r.CategoryId = c.Id
+                               AND r.CloseDate IS NOT NULL
+GROUP BY d.Name
+ORDER BY d.Name;
+
+/*16.	Favorite Categories
+Select all departments with their categories where users have submitted a report. 
+Show the distribution of reports among the categories of each department in percentages without decimal part.
+Required columns:
+?	Department Name 
+?	Category Name
+?	Percentage
+Order them by department name, then by category name and then by percentage (all in ascending order).
+*/
